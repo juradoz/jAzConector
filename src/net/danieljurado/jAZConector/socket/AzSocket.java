@@ -83,12 +83,19 @@ public class AzSocket extends SocketTCPCommand {
 
 	public static final int esDiscarConf = 32;
 
+	public static final int esAcw = 33;
+
+	public static final int esAcwErro = 34;
+
+	public static final int esAcwConf = 35;
+
 	private static final String COMANDO_DESLIGAR = "DESLIGAR(%s;%d)";
 	private static final String COMANDO_LOGAR = "LOGAR(%s;%s;%s;%s)";
 	private static final String COMANDO_DESLOGAR = "DESLOGAR(%s;%s;%s)";
 	private static final String COMANDO_DISCAR = "DISCAR(%s;%s;%s)";
 	private static final String COMANDO_PAUSAR = "PAUSAR(%s;%s;%s;%d)";
 	private static final String COMANDO_READY = "READY(%s;%s;%s)";
+	private static final String COMANDO_ACW = "ACW(%s;%s;%s)";
 
 	public int estadoSocket = esNotReady;
 
@@ -267,6 +274,26 @@ public class AzSocket extends SocketTCPCommand {
 		}
 	}
 
+	private class ProcessaAcwOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaAcwConf implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esAcwConf);
+		}
+	}
+
+	private class ProcessaAcwErro implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esAcwErro);
+		}
+	}
+
 	private class ProcessaCallCleared implements ITCPCommandProccess {
 		@Override
 		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
@@ -410,6 +437,10 @@ public class AzSocket extends SocketTCPCommand {
 		validCommands.put("ReadyOk".toUpperCase(), new ProcessaReadyOk());
 		validCommands.put("ReadyConf".toUpperCase(), new ProcessaReadyConf());
 		validCommands.put("ReadyErro".toUpperCase(), new ProcessaReadyErro());
+
+		validCommands.put("AcwOk".toUpperCase(), new ProcessaAcwOk());
+		validCommands.put("AcwConf".toUpperCase(), new ProcessaAcwConf());
+		validCommands.put("AcwErro".toUpperCase(), new ProcessaAcwErro());
 	}
 
 	public boolean alternateCall(int activeCallId, int otherCallId,
@@ -741,6 +772,34 @@ public class AzSocket extends SocketTCPCommand {
 				}
 			}
 			return getEstadoSocket() == esReadyConf;
+		} finally {
+			setEstadoSocket(esIdle);
+		}
+	}
+
+	public boolean acw(String ramal, String agente, String grupo) {
+		if (!isConnected() && estadoSocket != esNotReady) {
+			return false;
+		}
+
+		String comando = String.format(COMANDO_ACW, ramal, agente, grupo);
+
+		setEstadoSocket(esAcw);
+		try {
+			send(comando);
+
+			Calendar timeout = Calendar.getInstance();
+			timeout.add(Calendar.SECOND, 10);
+			while (estadoSocket != esErro && estadoSocket != esAcwConf
+					&& estadoSocket != esAcwErro
+					&& timeout.after(Calendar.getInstance())) {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+
+				}
+			}
+			return getEstadoSocket() == esAcwConf;
 		} finally {
 			setEstadoSocket(esIdle);
 		}
