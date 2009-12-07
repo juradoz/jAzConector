@@ -22,264 +22,6 @@ public class AzSocket extends SocketTCPCommand {
 		private static AzSocket instance = null;
 	}
 
-	public static AzSocket getInstance() {
-		return AzSocketHolder.instance;
-	}
-
-	public static AzSocket getInstance(Socket conexao) {
-		AzSocketHolder.instance = new AzSocket(conexao);
-		return AzSocketHolder.instance;
-	}
-
-	public static final int esNotReady = 0;
-
-	public static final int esIdle = 1;
-
-	public static final int esErro = 2;
-
-	public static final int esLogar = 3;
-
-	public static final int esLogarOK = 4;
-
-	public static final int esLogarErro = 5;
-
-	public static final int esLogarConf = 6;
-
-	public static final int esDeslogar = 7;
-
-	public static final int esDeslogarOK = 8;
-
-	public static final int esDeslogarErro = 9;
-
-	public static final int esDeslogarConf = 10;
-
-	public static final int esReady = 11;
-
-	public static final int esReadyErro = 13;
-
-	public static final int esReadyConf = 14;
-
-	public static final int esNotReadyOk = 15;
-
-	public static final int esNotReadyErro = 17;
-
-	public static final int esNotReadyConf = 18;
-
-	public static final int esDesligar = 19;
-
-	public static final int esDesligarErro = 21;
-
-	public static final int esDesligarConf = 22;
-
-	public static final int esAtender = 23;
-
-	public static final int esAtenderErro = 25;
-
-	public static final int esAtenderConf = 26;
-
-	public static final int esDiscar = 30;
-
-	public static final int esDiscarErro = 31;
-
-	public static final int esDiscarConf = 32;
-
-	public static final int esAcw = 33;
-
-	public static final int esAcwErro = 34;
-
-	public static final int esAcwConf = 35;
-
-	private static final String COMANDO_DESLIGAR = "DESLIGAR(%s;%d)";
-	private static final String COMANDO_LOGAR = "LOGAR(%s;%s;%s;%s)";
-	private static final String COMANDO_DESLOGAR = "DESLOGAR(%s;%s;%s)";
-	private static final String COMANDO_DISCAR = "DISCAR(%s;%s;%s)";
-	private static final String COMANDO_PAUSAR = "PAUSAR(%s;%s;%s;%d)";
-	private static final String COMANDO_READY = "READY(%s;%s;%s)";
-	private static final String COMANDO_ACW = "ACW(%s;%s;%s)";
-
-	public int estadoSocket = esNotReady;
-
-	private class ProcessaUniversalError implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			switch (((AzSocket) socket).getEstadoSocket()) {
-			case esAtender:
-				((AzSocket) socket).setEstadoSocket(esAtenderErro);
-				break;
-			case esDesligar:
-				((AzSocket) socket).setEstadoSocket(esDesligarErro);
-				break;
-			case esDeslogar:
-				((AzSocket) socket).setEstadoSocket(esDeslogarErro);
-				break;
-			case esDiscar:
-				((AzSocket) socket).setEstadoSocket(esDiscarErro);
-				break;
-			case esLogar:
-				((AzSocket) socket).setEstadoSocket(esLogarErro);
-				break;
-			case esNotReady:
-				((AzSocket) socket).setEstadoSocket(esNotReadyErro);
-				break;
-			case esReady:
-				((AzSocket) socket).setEstadoSocket(esReadyErro);
-				break;
-			}
-		}
-	}
-
-	private class ProcessaTSocketManager implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
-	private class ProcessaCtDialer implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esIdle);
-		}
-	}
-
-	private class ProcessaDiscarOk implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
-	private class ProcessaDiscarConf implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			int callId = -1;
-			for (int i = 0; i < comando.getParameters().length; i++) {
-				switch (i) {
-				case 1:
-					callId = Integer.parseInt(comando.getParameters()[i]);
-					break;
-				}
-			}
-			EventMakeCallConf eventMakeCallConf = new EventMakeCallConf(callId,
-					-1);
-			addEvent(eventMakeCallConf);
-			setChanged();
-			notifyObservers(eventMakeCallConf);
-			((AzSocket) socket).setEstadoSocket(esDiscarConf);
-		}
-	}
-
-	private class ProcessaDiscarErro implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esDiscarErro);
-		}
-	}
-
-	private class ProcessaDesligarOk implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
-	private class ProcessaDesligarConf implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esDesligarConf);
-		}
-	}
-
-	private class ProcessaDesligarErro implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esDesligarErro);
-		}
-	}
-
-	private class ProcessaLogarOk implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
-	private class ProcessaLogarConf implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esLogarConf);
-		}
-	}
-
-	private class ProcessaLogarErro implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esLogarErro);
-		}
-	}
-
-	private class ProcessaDeslogarOk implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
-	private class ProcessaDeslogarConf implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esDeslogarConf);
-		}
-	}
-
-	private class ProcessaDeslogarErro implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esDeslogarErro);
-		}
-	}
-
-	private class ProcessaNotReadyOk implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
-	private class ProcessaNotReadyConf implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esNotReadyConf);
-		}
-	}
-
-	private class ProcessaNotReadyErro implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esNotReadyErro);
-		}
-	}
-
-	private class ProcessaReadyOk implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
-	private class ProcessaReadyConf implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esReadyConf);
-		}
-	}
-
-	private class ProcessaReadyErro implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esReadyErro);
-		}
-	}
-
-	private class ProcessaAcwOk implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-		}
-	}
-
 	private class ProcessaAcwConf implements ITCPCommandProccess {
 		@Override
 		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
@@ -291,6 +33,12 @@ public class AzSocket extends SocketTCPCommand {
 		@Override
 		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
 			((AzSocket) socket).setEstadoSocket(esAcwErro);
+		}
+	}
+
+	private class ProcessaAcwOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
 		}
 	}
 
@@ -313,28 +61,6 @@ public class AzSocket extends SocketTCPCommand {
 			addEvent(eventCallCleared);
 			setChanged();
 			notifyObservers(eventCallCleared);
-		}
-	}
-
-	private class ProcessaConnectionCleared implements ITCPCommandProccess {
-		@Override
-		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			int callId = -1, cause = -1;
-			for (int i = 0; i < comando.getParameters().length; i++) {
-				switch (i) {
-				case 1:
-					callId = Integer.parseInt(comando.getParameters()[i]);
-					break;
-				case 5:
-					cause = Integer.parseInt(comando.getParameters()[i]);
-					break;
-				}
-			}
-			EventConnectionCleared eventConnectionCleared = new EventConnectionCleared(
-					callId, cause);
-			addEvent(eventConnectionCleared);
-			setChanged();
-			notifyObservers(eventConnectionCleared);
 		}
 	}
 
@@ -396,6 +122,294 @@ public class AzSocket extends SocketTCPCommand {
 		}
 	}
 
+	private class ProcessaConnectionCleared implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			int callId = -1, cause = -1;
+			for (int i = 0; i < comando.getParameters().length; i++) {
+				switch (i) {
+				case 1:
+					callId = Integer.parseInt(comando.getParameters()[i]);
+					break;
+				case 5:
+					cause = Integer.parseInt(comando.getParameters()[i]);
+					break;
+				}
+			}
+			EventConnectionCleared eventConnectionCleared = new EventConnectionCleared(
+					callId, cause);
+			addEvent(eventConnectionCleared);
+			setChanged();
+			notifyObservers(eventConnectionCleared);
+		}
+	}
+
+	private class ProcessaCtDialer implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esIdle);
+		}
+	}
+
+	private class ProcessaDesligarConf implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esDesligarConf);
+		}
+	}
+
+	private class ProcessaDesligarErro implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esDesligarErro);
+		}
+	}
+
+	private class ProcessaDesligarOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaDeslogarConf implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esDeslogarConf);
+		}
+	}
+
+	private class ProcessaDeslogarErro implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esDeslogarErro);
+		}
+	}
+
+	private class ProcessaDeslogarOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaDiscarConf implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			int callId = -1;
+			for (int i = 0; i < comando.getParameters().length; i++) {
+				switch (i) {
+				case 1:
+					callId = Integer.parseInt(comando.getParameters()[i]);
+					break;
+				}
+			}
+			EventMakeCallConf eventMakeCallConf = new EventMakeCallConf(callId,
+					-1);
+			addEvent(eventMakeCallConf);
+			setChanged();
+			notifyObservers(eventMakeCallConf);
+			((AzSocket) socket).setEstadoSocket(esDiscarConf);
+		}
+	}
+
+	private class ProcessaDiscarErro implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esDiscarErro);
+		}
+	}
+
+	private class ProcessaDiscarOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaLogarConf implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esLogarConf);
+		}
+	}
+
+	private class ProcessaLogarErro implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esLogarErro);
+		}
+	}
+
+	private class ProcessaLogarOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaNotReadyConf implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esNotReadyConf);
+		}
+	}
+
+	private class ProcessaNotReadyErro implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esNotReadyErro);
+		}
+	}
+
+	private class ProcessaNotReadyOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaReadyConf implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esReadyConf);
+		}
+	}
+
+	private class ProcessaReadyErro implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			((AzSocket) socket).setEstadoSocket(esReadyErro);
+		}
+	}
+
+	private class ProcessaReadyOk implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaTSocketManager implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+		}
+	}
+
+	private class ProcessaUniversalError implements ITCPCommandProccess {
+		@Override
+		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
+			switch (((AzSocket) socket).getEstadoSocket()) {
+			case esAtender:
+				((AzSocket) socket).setEstadoSocket(esAtenderErro);
+				break;
+			case esDesligar:
+				((AzSocket) socket).setEstadoSocket(esDesligarErro);
+				break;
+			case esDeslogar:
+				((AzSocket) socket).setEstadoSocket(esDeslogarErro);
+				break;
+			case esDiscar:
+				((AzSocket) socket).setEstadoSocket(esDiscarErro);
+				break;
+			case esLogar:
+				((AzSocket) socket).setEstadoSocket(esLogarErro);
+				break;
+			case esNotReady:
+				((AzSocket) socket).setEstadoSocket(esNotReadyErro);
+				break;
+			case esReady:
+				((AzSocket) socket).setEstadoSocket(esReadyErro);
+				break;
+			}
+		}
+	}
+
+	public static final int esNotReady = 0;
+
+	public static final int esIdle = 1;
+
+	public static final int esErro = 2;
+
+	public static final int esLogar = 3;
+	public static final int esLogarOK = 4;
+	public static final int esLogarErro = 5;
+	public static final int esLogarConf = 6;
+	public static final int esDeslogar = 7;
+	public static final int esDeslogarOK = 8;
+	public static final int esDeslogarErro = 9;
+
+	public static final int esDeslogarConf = 10;
+
+	public static final int esReady = 11;
+
+	public static final int esReadyErro = 13;
+
+	public static final int esReadyConf = 14;
+
+	public static final int esNotReadyOk = 15;
+
+	public static final int esNotReadyErro = 17;
+
+	public static final int esNotReadyConf = 18;
+
+	public static final int esDesligar = 19;
+
+	public static final int esDesligarErro = 21;
+
+	public static final int esDesligarConf = 22;
+
+	public static final int esAtender = 23;
+
+	public static final int esAtenderErro = 25;
+
+	public static final int esAtenderConf = 26;
+
+	public static final int esDiscar = 30;
+
+	public static final int esDiscarErro = 31;
+
+	public static final int esDiscarConf = 32;
+
+	public static final int esAcw = 33;
+
+	public static final int esAcwErro = 34;
+
+	public static final int esAcwConf = 35;
+
+	private static final String COMANDO_DESLIGAR = "DESLIGAR(%s;%d)";
+
+	private static final String COMANDO_LOGAR = "LOGAR(%s;%s;%s;%s)";
+
+	private static final String COMANDO_DESLOGAR = "DESLOGAR(%s;%s;%s)";
+
+	private static final String COMANDO_DISCAR = "DISCAR(%s;%s;%s)";
+
+	private static final String COMANDO_PAUSAR = "PAUSAR(%s;%s;%s;%d)";
+
+	private static final String COMANDO_READY = "READY(%s;%s;%s)";
+
+	private static final String COMANDO_ACW = "ACW(%s;%s;%s)";
+
+	public static AzSocket getInstance() {
+		return AzSocketHolder.instance;
+	}
+
+	public static AzSocket getInstance(Socket conexao) {
+		AzSocketHolder.instance = new AzSocket(conexao);
+		return AzSocketHolder.instance;
+	}
+
+	public int estadoSocket = esNotReady;
+
+	private String lastANI = "";
+
+	private int lastCallId = -1;
+
+	private int lastCause = -1;
+
+	private String lastDNIS = "";
+
+	private ArrayList<Event> events = new ArrayList<Event>();
+
+	private String lastUserInfo = "";
+
+	private String lastUserDetails = "";
+
 	public AzSocket(Socket conexao) {
 		super(conexao);
 		validCommands.put("UniversalError".toUpperCase(),
@@ -441,6 +455,47 @@ public class AzSocket extends SocketTCPCommand {
 		validCommands.put("AcwOk".toUpperCase(), new ProcessaAcwOk());
 		validCommands.put("AcwConf".toUpperCase(), new ProcessaAcwConf());
 		validCommands.put("AcwErro".toUpperCase(), new ProcessaAcwErro());
+	}
+
+	public boolean acw(String ramal, String agente, String grupo) {
+		if (!isConnected() && estadoSocket != esNotReady) {
+			return false;
+		}
+
+		String comando = String.format(COMANDO_ACW, ramal, agente, grupo);
+
+		setEstadoSocket(esAcw);
+		try {
+			send(comando);
+
+			Calendar timeout = Calendar.getInstance();
+			timeout.add(Calendar.SECOND, 10);
+			while (estadoSocket != esErro && estadoSocket != esAcwConf
+					&& estadoSocket != esAcwErro
+					&& timeout.after(Calendar.getInstance())) {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+
+				}
+			}
+			return getEstadoSocket() == esAcwConf;
+		} finally {
+			setEstadoSocket(esIdle);
+		}
+	}
+
+	private void addEvent(Event event) {
+		Logger.getLogger(getClass().getSimpleName()).info(
+				"Registrando evento " + event.getClass().getSimpleName());
+		synchronized (events) {
+			while (events.size() > 1000) {
+				Logger.getLogger(getClass().getSimpleName()).warning(
+						"Removendo evento por limpeza de buffer.");
+				events.remove(0);
+			}
+			events.add(event);
+		}
 	}
 
 	public boolean alternateCall(int activeCallId, int otherCallId,
@@ -490,66 +545,20 @@ public class AzSocket extends SocketTCPCommand {
 		return this.estadoSocket;
 	}
 
-	private String lastANI = "";
-
 	public String getLastANI() {
 		return lastANI;
 	}
-
-	private int lastCallId = -1;
 
 	public int getLastCallId() {
 		return lastCallId;
 	}
 
-	private int lastCause = -1;
-
 	public int getLastCause() {
 		return lastCause;
 	}
 
-	private String lastDNIS = "";
-
 	public String getLastDNIS() {
 		return lastDNIS;
-	}
-
-	private ArrayList<Event> events = new ArrayList<Event>();
-
-	private void setLastANI(String lastANI) {
-		this.lastANI = lastANI;
-	}
-
-	private void setLastDNIS(String lastDNIS) {
-		this.lastDNIS = lastDNIS;
-	}
-
-	private String lastUserInfo = "";
-
-	public String getLastUserInfo() {
-		return lastUserInfo;
-	}
-
-	private void setLastUserInfo(String lastUserInfo) {
-		this.lastUserInfo = lastUserInfo;
-	}
-
-	private String lastUserDetails = "";
-
-	public String getLastUserDetails() {
-		return lastUserDetails;
-	}
-
-	private void setLastUserDetails(String lastUserDetails) {
-		this.lastUserDetails = lastUserDetails;
-	}
-
-	private void setLastCallId(int lastCallId) {
-		this.lastCallId = lastCallId;
-	}
-
-	private void setLastCause(int lastCause) {
-		this.lastCause = lastCause;
 	}
 
 	public int getLastEvent() {
@@ -628,6 +637,14 @@ public class AzSocket extends SocketTCPCommand {
 			}
 		}
 		return JAzConector.EV_UNKNOWN;
+	}
+
+	public String getLastUserDetails() {
+		return lastUserDetails;
+	}
+
+	public String getLastUserInfo() {
+		return lastUserInfo;
 	}
 
 	public boolean holdCall(int activeCallId, String station) {
@@ -777,34 +794,6 @@ public class AzSocket extends SocketTCPCommand {
 		}
 	}
 
-	public boolean acw(String ramal, String agente, String grupo) {
-		if (!isConnected() && estadoSocket != esNotReady) {
-			return false;
-		}
-
-		String comando = String.format(COMANDO_ACW, ramal, agente, grupo);
-
-		setEstadoSocket(esAcw);
-		try {
-			send(comando);
-
-			Calendar timeout = Calendar.getInstance();
-			timeout.add(Calendar.SECOND, 10);
-			while (estadoSocket != esErro && estadoSocket != esAcwConf
-					&& estadoSocket != esAcwErro
-					&& timeout.after(Calendar.getInstance())) {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-
-				}
-			}
-			return getEstadoSocket() == esAcwConf;
-		} finally {
-			setEstadoSocket(esIdle);
-		}
-	}
-
 	public boolean retrieveCall(int heldCallId, String station) {
 		// TODO Auto-generated method stub
 		return false;
@@ -814,21 +803,32 @@ public class AzSocket extends SocketTCPCommand {
 		this.estadoSocket = estadoSocket;
 	}
 
+	private void setLastANI(String lastANI) {
+		this.lastANI = lastANI;
+	}
+
+	private void setLastCallId(int lastCallId) {
+		this.lastCallId = lastCallId;
+	}
+
+	private void setLastCause(int lastCause) {
+		this.lastCause = lastCause;
+	}
+
+	private void setLastDNIS(String lastDNIS) {
+		this.lastDNIS = lastDNIS;
+	}
+
+	private void setLastUserDetails(String lastUserDetails) {
+		this.lastUserDetails = lastUserDetails;
+	}
+
+	private void setLastUserInfo(String lastUserInfo) {
+		this.lastUserInfo = lastUserInfo;
+	}
+
 	public boolean transferCall(int heldCallId, int activeCallId, String station) {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	private void addEvent(Event event) {
-		Logger.getLogger(getClass().getSimpleName()).info(
-				"Registrando evento " + event.getClass().getSimpleName());
-		synchronized (events) {
-			while (events.size() > 1000) {
-				Logger.getLogger(getClass().getSimpleName()).warning(
-						"Removendo evento por limpeza de buffer.");
-				events.remove(0);
-			}
-			events.add(event);
-		}
 	}
 }

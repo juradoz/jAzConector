@@ -3,23 +3,18 @@ package net.danieljurado.jAZConector.test;
 import net.danieljurado.jAZConector.JAzConector;
 
 public class Teste {
-	public static void main(String[] args) {
-		JAzConector jAzonector = new JAzConector();
-		jAzonector.init();
-		jAzonector.openStream("10.10.10.9", 22000);
-		// espera(5);
+	private static void desloga(JAzConector jAzConector) {
+		System.out.println("Logout: "
+				+ jAzConector.logOut("8003", "1000", "4040"));
+		jAzConector.getLastEvent();
+	}
 
-		loga(jAzonector);
-		esperaEventos(jAzonector);
-		desloga(jAzonector);
-
-		loga(jAzonector);
-		pausaDespausa(jAzonector);
-		desloga(jAzonector);
-
-		ligaEDesliga(jAzonector);
-
-		logaEDesloga(jAzonector);
+	private static void espera(int segundos) {
+		try {
+			Thread.sleep(segundos * 1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static void esperaEventos(JAzConector jAzonector) {
@@ -63,37 +58,6 @@ public class Teste {
 		}
 	}
 
-	private static void logaEDesloga(JAzConector jAzConector) {
-		loga(jAzConector);
-		desloga(jAzConector);
-	}
-
-	private static void desloga(JAzConector jAzConector) {
-		System.out.println("Logout: "
-				+ jAzConector.logOut("8003", "1000", "4040"));
-		jAzConector.getLastEvent();
-	}
-
-	private static void pausaDespausa(JAzConector jAzConector) {
-		System.out.println("NotReady: "
-				+ jAzConector.notReady("8003", "1000", "4040", 0));
-		jAzConector.getLastEvent();
-
-		System.out.println("Ready: "
-				+ jAzConector.ready("8003", "1000", "4040"));
-		jAzConector.getLastEvent();
-	}
-
-	private static void loga(JAzConector jAzConector) {
-		boolean result = jAzConector.logIn("8003", "1000", "4040", "1000");
-		if (!result) {
-			desloga(jAzConector);
-			result = jAzConector.logIn("8003", "1000", "4040", "1000");
-		}
-		System.out.println(result);
-		jAzConector.getLastEvent();
-	}
-
 	private static void ligaEDesliga(JAzConector jAzConector) {
 		System.out.println("MakeCall: "
 				+ jAzConector.makeCall("8003", "8004", "Teste"));
@@ -107,11 +71,47 @@ public class Teste {
 		jAzConector.getLastEvent();
 	}
 
-	private static void espera(int segundos) {
-		try {
-			Thread.sleep(segundos * 1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	private static void loga(JAzConector jAzConector) {
+		boolean result = jAzConector.logIn("8003", "1000", "4040", "1000");
+		if (!result) {
+			desloga(jAzConector);
+			result = jAzConector.logIn("8003", "1000", "4040", "1000");
 		}
+		System.out.println(result);
+		jAzConector.getLastEvent();
+	}
+
+	private static void logaEDesloga(JAzConector jAzConector) {
+		loga(jAzConector);
+		desloga(jAzConector);
+	}
+
+	public static void main(String[] args) {
+		JAzConector jAzonector = new JAzConector();
+		jAzonector.init();
+		jAzonector.openStream("10.10.10.9", 22000);
+		// espera(5);
+
+		loga(jAzonector);
+		esperaEventos(jAzonector);
+		desloga(jAzonector);
+
+		loga(jAzonector);
+		pausaDespausa(jAzonector);
+		desloga(jAzonector);
+
+		ligaEDesliga(jAzonector);
+
+		logaEDesloga(jAzonector);
+	}
+
+	private static void pausaDespausa(JAzConector jAzConector) {
+		System.out.println("NotReady: "
+				+ jAzConector.notReady("8003", "1000", "4040", 0));
+		jAzConector.getLastEvent();
+
+		System.out.println("Ready: "
+				+ jAzConector.ready("8003", "1000", "4040"));
+		jAzConector.getLastEvent();
 	}
 }
