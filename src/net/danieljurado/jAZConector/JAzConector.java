@@ -946,6 +946,35 @@ public class JAzConector extends Applet {
 	}
 
 	/**
+	 * Coloca um operador em pausa produtiva, tornando-o indisponível para o
+	 * atendimento.
+	 * 
+	 * @param station
+	 *            Ramal onde o agente está logado.
+	 * @param agentId
+	 *            Agente atualmente disponível.
+	 * @param agentGroup
+	 *            Grupo onde o agente está logado.
+	 * @return Retorna true para sucesso, false para erro na operação.
+	 * 
+	 * @see #ready(String, String, String)
+	 */
+	public boolean acw(String station, String agentId, String agentGroup) {
+		Logger.getLogger(getClass().getSimpleName()).info(
+				String.format("Entrada %s com params %s %s %s", "acw", station,
+						agentId, agentGroup));
+		// assertStringParameter(station, "station");
+		// assertStringParameter(agentId, "agentId");
+		// assertStringParameter(agentGroup, "agentGroup");
+		assertConnection();
+		if (!AzSocket.getInstance().acw(station, agentId, agentGroup))
+			return false;
+
+		setAgentState(AS_ACW);
+		return true;
+	}
+
+	/**
 	 * <b>Método não implementado</b>. Torna ativa uma determinada ligação
 	 * previamente retida.
 	 * 
