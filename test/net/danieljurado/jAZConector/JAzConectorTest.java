@@ -39,11 +39,6 @@ public class JAzConectorTest {
 	}
 
 	@Test
-	public void testCloseStream() {
-		fail("Not yet implemented");
-	}
-
-	@Test
 	public void testConferenceCall() {
 		fail("Not yet implemented");
 	}
@@ -125,11 +120,6 @@ public class JAzConectorTest {
 
 	@Test
 	public void testNotReady() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testOpenStream() {
 		fail("Not yet implemented");
 	}
 
