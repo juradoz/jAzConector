@@ -1,154 +1,191 @@
 package net.danieljurado.jAZConector;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class JAzConectorTest {
 
-	JAzConector jAzConector;
+	private static JAzConector jAzConector;
 
 	@Before
-	public void setUp() throws Exception {
-		jAzConector = new JAzConector();
-		jAzConector.init();
-		assertTrue(jAzConector.openStream("localhost", 25000));
+	public void setUp() {
+		jAzConector.logOut(station, agentId, agentGroup);
 	}
 
 	@After
 	public void tearDown() {
+		jAzConector.logOut(station, agentId, agentGroup);
+	}
+
+	@BeforeClass
+	public static void classSetUp() {
+		jAzConector = new JAzConector();
+		jAzConector.init();
+		assertTrue(jAzConector.openStream("localhost", 24000));
+		while (!jAzConector.isConnected())
+			espera();
+	}
+
+	private static void espera() {
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			fail(e.getMessage());
+		}
+	}
+
+	@AfterClass
+	public static void classTearDown() {
 		assertTrue(jAzConector.closeStream());
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testAlternateCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testAnswerCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testClearCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testConferenceCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testConsultationCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetAgentState() {
-		fail("Not yet implemented");
+		assertEquals(JAzConector.AS_LOGGEDOUT, jAzConector.getAgentState());
+		assertTrue(jAzConector.logIn(station, agentId, agentGroup,
+				agentPassword));
+		assertEquals(JAzConector.AS_NOTREADY, jAzConector.getAgentState());
+		assertTrue(jAzConector.ready(station, agentId, agentGroup));
+		assertEquals(JAzConector.AS_READY, jAzConector.getAgentState());
+		assertTrue(jAzConector.notReady(station, agentId, agentGroup,
+				reasonCode));
+		assertEquals(JAzConector.AS_NOTREADY, jAzConector.getAgentState());
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetEventObserver() {
-		fail("Not yet implemented");
+		assertNotNull(jAzConector.getEventObserver());
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetLastANI() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetLastCallId() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetLastCause() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetLastDNIS() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetLastEvent() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetLastUserDetails() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testGetLastUserInfo() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testHoldCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testIsConnected() {
-		fail("Not yet implemented");
+		assertTrue(jAzConector.isConnected());
 	}
 
-	@Test
+	private static final String station = "3333";
+	private static final String agentId = "3333";
+	private static final String agentGroup = "101";
+	private static final String agentPassword = "3333";
+
+	@Test(timeout = 1000)
 	public void testLogIn() {
-		fail("Not yet implemented");
+		assertTrue(jAzConector.logIn(station, agentId, agentGroup,
+				agentPassword));
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testLogOut() {
-		fail("Not yet implemented");
+		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
+		assertTrue(jAzConector.logOut(station, agentId, agentGroup));
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testMakeCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
+	private static final int reasonCode = 0;
+
+	@Test(timeout = 1000)
 	public void testNotReady() {
-		fail("Not yet implemented");
+		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
+		jAzConector.ready(station, agentId, agentGroup);
+		assertTrue(jAzConector.notReady(station, agentId, agentGroup,
+				reasonCode));
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testReady() {
-		fail("Not yet implemented");
+		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
+		assertTrue(jAzConector.ready(station, agentId, agentGroup));
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testAcw() {
-		fail("Not yet implemented");
+		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
+		jAzConector.ready(station, agentId, agentGroup);
+		assertTrue(jAzConector.acw(station, agentId, agentGroup));
 	}
 
-	@Test
+	@Test(timeout = 1000)
 	public void testRetrieveCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test
-	public void testSetPort() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testSetServer() {
-		fail("Not yet implemented");
-	}
-
-	@Test
+	@Test(timeout = 1000)
 	public void testTransferCall() {
 		fail("Not yet implemented");
 	}

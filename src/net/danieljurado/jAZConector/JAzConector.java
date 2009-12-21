@@ -786,7 +786,7 @@ public class JAzConector extends Applet {
 				agentPassword)) {
 			return false;
 		}
-		setAgentState(AS_READY);
+		setAgentState(AS_NOTREADY);
 		return true;
 	}
 
@@ -1002,101 +1002,101 @@ public class JAzConector extends Applet {
 	}
 
 	private void setAgentState(int agentState) {
-		if (agentState == this.agentState) {
+		if (agentState == getAgentState()) {
 			return;
 		}
 
-		if (agentState != AS_READY)
-			switch (this.getAgentState()) {
-			case AS_LOGGEDOUT:
-				switch (agentState) {
-				case AS_READY:
-					break;
-				default:
-					return;
-				}
-				break;
-			case AS_READY:
-				switch (agentState) {
-				case AS_NOTREADY:
-					break;
-				case AS_RINGING:
-					break;
-				case AS_BUSY:
-					break;
-				case AS_LOGGEDOUT:
-					break;
-				default:
-					return;
-				}
-				break;
-			case AS_NOTREADY:
-				switch (agentState) {
-				case AS_LOGGEDOUT:
-					break;
-				case AS_READY:
-					break;
-				default:
-					return;
-				}
-				break;
-			case AS_ACW:
-				switch (agentState) {
-				case AS_LOGGEDOUT:
-					break;
-				case AS_READY:
-					break;
-				case AS_NOTREADY:
-					break;
-				default:
-					return;
-				}
-				break;
-			case AS_RINGING:
-				switch (agentState) {
-				case AS_LOGGEDOUT:
-					break;
-				case AS_NOTREADY:
-					break;
-				case AS_ACW:
-					break;
-				case AS_BUSY:
-					break;
-				case AS_HOLD:
-					break;
-				default:
-					return;
-				}
-				break;
-			case AS_BUSY:
-				switch (agentState) {
-				case AS_LOGGEDOUT:
-					break;
-				case AS_NOTREADY:
-					break;
-				case AS_ACW:
-					break;
-				case AS_HOLD:
-					break;
-				default:
-					return;
-				}
-				break;
-			case AS_HOLD:
-				switch (agentState) {
-				case AS_LOGGEDOUT:
-					break;
-				case AS_ACW:
-					break;
-				case AS_RINGING:
-					break;
-				case AS_BUSY:
-					break;
-				default:
-					return;
-				}
-				break;
-			}
+		// if (agentState != AS_READY)
+		// switch (this.getAgentState()) {
+		// case AS_LOGGEDOUT:
+		// switch (agentState) {
+		// case AS_READY:
+		// break;
+		// default:
+		// return;
+		// }
+		// break;
+		// case AS_READY:
+		// switch (agentState) {
+		// case AS_NOTREADY:
+		// break;
+		// case AS_RINGING:
+		// break;
+		// case AS_BUSY:
+		// break;
+		// case AS_LOGGEDOUT:
+		// break;
+		// default:
+		// return;
+		// }
+		// break;
+		// case AS_NOTREADY:
+		// switch (agentState) {
+		// case AS_LOGGEDOUT:
+		// break;
+		// case AS_READY:
+		// break;
+		// default:
+		// return;
+		// }
+		// break;
+		// case AS_ACW:
+		// switch (agentState) {
+		// case AS_LOGGEDOUT:
+		// break;
+		// case AS_READY:
+		// break;
+		// case AS_NOTREADY:
+		// break;
+		// default:
+		// return;
+		// }
+		// break;
+		// case AS_RINGING:
+		// switch (agentState) {
+		// case AS_LOGGEDOUT:
+		// break;
+		// case AS_NOTREADY:
+		// break;
+		// case AS_ACW:
+		// break;
+		// case AS_BUSY:
+		// break;
+		// case AS_HOLD:
+		// break;
+		// default:
+		// return;
+		// }
+		// break;
+		// case AS_BUSY:
+		// switch (agentState) {
+		// case AS_LOGGEDOUT:
+		// break;
+		// case AS_NOTREADY:
+		// break;
+		// case AS_ACW:
+		// break;
+		// case AS_HOLD:
+		// break;
+		// default:
+		// return;
+		// }
+		// break;
+		// case AS_HOLD:
+		// switch (agentState) {
+		// case AS_LOGGEDOUT:
+		// break;
+		// case AS_ACW:
+		// break;
+		// case AS_RINGING:
+		// break;
+		// case AS_BUSY:
+		// break;
+		// default:
+		// return;
+		// }
+		// break;
+		// }
 
 		Logger.getLogger(getClass().getSimpleName()).info(
 				"Novo agentState: " + agentStateToStr(agentState));
@@ -1104,11 +1104,11 @@ public class JAzConector extends Applet {
 		this.agentState = agentState;
 	}
 
-	void setPort(int port) {
+	private void setPort(int port) {
 		this.port = port;
 	}
 
-	void setServer(String server) {
+	private void setServer(String server) {
 		this.server = server;
 	}
 
