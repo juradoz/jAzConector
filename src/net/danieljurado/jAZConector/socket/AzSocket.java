@@ -147,7 +147,6 @@ public class AzSocket extends SocketTCPCommand {
 	private class ProcessaCtDialer implements ITCPCommandProccess {
 		@Override
 		public void commandProccess(SocketTCPCommand socket, TCPCommand comando) {
-			((AzSocket) socket).setEstadoSocket(esIdle);
 		}
 	}
 
@@ -296,30 +295,29 @@ public class AzSocket extends SocketTCPCommand {
 			switch (((AzSocket) socket).getEstadoSocket()) {
 			case esAtender:
 				((AzSocket) socket).setEstadoSocket(esAtenderErro);
-				break;
+				return;
 			case esDesligar:
 				((AzSocket) socket).setEstadoSocket(esDesligarErro);
-				break;
+				return;
 			case esDeslogar:
 				((AzSocket) socket).setEstadoSocket(esDeslogarErro);
-				break;
+				return;
 			case esDiscar:
 				((AzSocket) socket).setEstadoSocket(esDiscarErro);
-				break;
+				return;
 			case esLogar:
 				((AzSocket) socket).setEstadoSocket(esLogarErro);
-				break;
+				return;
 			case esNotReady:
 				((AzSocket) socket).setEstadoSocket(esNotReadyErro);
-				break;
+				return;
 			case esReady:
 				((AzSocket) socket).setEstadoSocket(esReadyErro);
-				break;
+				return;
 			}
+			((AzSocket) socket).setEstadoSocket(esErro);
 		}
 	}
-
-	public static final int esNotReady = 0;
 
 	public static final int esIdle = 1;
 
@@ -341,7 +339,9 @@ public class AzSocket extends SocketTCPCommand {
 
 	public static final int esReadyConf = 14;
 
-	public static final int esNotReadyOk = 15;
+	public static final int esNotReady = 15;
+
+	public static final int esNotReadyOk = 16;
 
 	public static final int esNotReadyErro = 17;
 
@@ -349,27 +349,27 @@ public class AzSocket extends SocketTCPCommand {
 
 	public static final int esDesligar = 19;
 
-	public static final int esDesligarErro = 21;
+	public static final int esDesligarErro = 20;
 
-	public static final int esDesligarConf = 22;
+	public static final int esDesligarConf = 21;
 
-	public static final int esAtender = 23;
+	public static final int esAtender = 22;
 
-	public static final int esAtenderErro = 25;
+	public static final int esAtenderErro = 23;
 
-	public static final int esAtenderConf = 26;
+	public static final int esAtenderConf = 24;
 
-	public static final int esDiscar = 30;
+	public static final int esDiscar = 35;
 
-	public static final int esDiscarErro = 31;
+	public static final int esDiscarErro = 26;
 
-	public static final int esDiscarConf = 32;
+	public static final int esDiscarConf = 27;
 
-	public static final int esAcw = 33;
+	public static final int esAcw = 28;
 
-	public static final int esAcwErro = 34;
+	public static final int esAcwErro = 39;
 
-	public static final int esAcwConf = 35;
+	public static final int esAcwConf = 30;
 
 	private static final String COMANDO_DESLIGAR = "DESLIGAR(%s;%d)";
 
@@ -394,7 +394,7 @@ public class AzSocket extends SocketTCPCommand {
 		return AzSocketHolder.instance;
 	}
 
-	public int estadoSocket = esNotReady;
+	public int estadoSocket = esIdle;
 
 	private String lastANI = "";
 
@@ -458,7 +458,7 @@ public class AzSocket extends SocketTCPCommand {
 	}
 
 	public boolean acw(String ramal, String agente, String grupo) {
-		if (!isConnected() && estadoSocket != esNotReady) {
+		if (!isConnected()) {
 			return false;
 		}
 
@@ -510,7 +510,7 @@ public class AzSocket extends SocketTCPCommand {
 	}
 
 	public boolean clearCall(String station, int callId) {
-		if (!isConnected() && estadoSocket != esNotReady) {
+		if (!isConnected()) {
 			return false;
 		}
 
@@ -653,7 +653,7 @@ public class AzSocket extends SocketTCPCommand {
 	}
 
 	public boolean logIn(String ramal, String agente, String grupo, String senha) {
-		if (!isConnected() && estadoSocket != esNotReady) {
+		if (!isConnected()) {
 			return false;
 		}
 
@@ -682,7 +682,7 @@ public class AzSocket extends SocketTCPCommand {
 	}
 
 	public boolean logOut(String ramal, String agente, String grupo) {
-		if (!isConnected() && estadoSocket != esNotReady) {
+		if (!isConnected()) {
 			return false;
 		}
 
@@ -710,7 +710,7 @@ public class AzSocket extends SocketTCPCommand {
 	}
 
 	public boolean makeCall(String station, String destination, String userInfo) {
-		if (!isConnected() && estadoSocket != esNotReady) {
+		if (!isConnected()) {
 			return false;
 		}
 		String comando = String.format(COMANDO_DISCAR, station, destination,
@@ -738,7 +738,7 @@ public class AzSocket extends SocketTCPCommand {
 
 	public boolean notReady(String ramal, String agente, String grupo,
 			int motivo) {
-		if (!isConnected() && estadoSocket != esNotReady) {
+		if (!isConnected()) {
 			return false;
 		}
 
@@ -767,7 +767,7 @@ public class AzSocket extends SocketTCPCommand {
 	}
 
 	public boolean ready(String ramal, String agente, String grupo) {
-		if (!isConnected() && estadoSocket != esNotReady) {
+		if (!isConnected()) {
 			return false;
 		}
 

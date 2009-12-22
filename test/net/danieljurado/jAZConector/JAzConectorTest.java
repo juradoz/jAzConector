@@ -18,25 +18,36 @@ public class JAzConectorTest {
 	@Before
 	public void setUp() {
 		jAzConector.logOut(station, agentId, agentGroup);
+		limpaEventos();
+	}
+
+	private void limpaEventos() {
+		while (jAzConector.getLastEvent() != JAzConector.EV_NONE) {
+		}
 	}
 
 	@After
 	public void tearDown() {
 		jAzConector.logOut(station, agentId, agentGroup);
+		limpaEventos();
 	}
 
 	@BeforeClass
 	public static void classSetUp() {
 		jAzConector = new JAzConector();
 		jAzConector.init();
-		assertTrue(jAzConector.openStream("localhost", 24000));
-		while (!jAzConector.isConnected())
-			espera();
+		conecta();
 	}
 
-	private static void espera() {
+	private static void conecta() {
+		assertTrue(jAzConector.openStream("localhost", 24000));
+		while (!jAzConector.isConnected())
+			espera(500);
+	}
+
+	private static void espera(int milliseconds) {
 		try {
-			Thread.sleep(500);
+			Thread.sleep(milliseconds);
 		} catch (InterruptedException e) {
 			fail(e.getMessage());
 		}
@@ -47,145 +58,318 @@ public class JAzConectorTest {
 		assertTrue(jAzConector.closeStream());
 	}
 
-	@Test(timeout = 1000)
+	private static final String destination = "91";
+	private static final String destination2 = "92";
+	private static final String userInfo = "teste";
+
 	public void testAlternateCall() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station, destination, userInfo));
+		assertEquals(JAzConector.AS_BUSY, jAzConector.getAgentState());
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertTrue(jAzConector.consultationCall(callId, station, destination2,
+				userInfo));
+
+		assertEquals(JAzConector.AS_BUSY, jAzConector.getAgentState());
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId2 = jAzConector.getLastCallId();
+		assertTrue(callId2 > 0);
+
+		espera(5000);
+
+		assertTrue(jAzConector.alternateCall(callId2, callId, station));
+
+		espera(5000);
+
+		assertTrue(jAzConector.alternateCall(callId, callId2, station));
+
+		assertTrue(jAzConector.clearCall(station, callId));
+		assertTrue(jAzConector.clearCall(station, callId2));
 	}
 
-	@Test(timeout = 1000)
 	public void testAnswerCall() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertTrue(jAzConector.answerCall(station, callId));
+
+		espera(5000);
+
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testClearCall() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
 	public void testConferenceCall() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station, destination, userInfo));
+		assertEquals(JAzConector.AS_BUSY, jAzConector.getAgentState());
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertTrue(jAzConector.consultationCall(callId, station, destination2,
+				userInfo));
+
+		assertEquals(JAzConector.AS_BUSY, jAzConector.getAgentState());
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId2 = jAzConector.getLastCallId();
+		assertTrue(callId2 > 0);
+
+		espera(5000);
+
+		assertTrue(jAzConector.conferenceCall(callId, callId2, station));
+
+		espera(5000);
+
+		assertTrue(jAzConector.clearCall(station, callId));
+		assertTrue(jAzConector.clearCall(station, callId2));
 	}
 
-	@Test(timeout = 1000)
 	public void testConsultationCall() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station, destination, userInfo));
+		assertEquals(JAzConector.AS_BUSY, jAzConector.getAgentState());
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertTrue(jAzConector.consultationCall(callId, station, destination2,
+				userInfo));
+
+		assertEquals(JAzConector.AS_BUSY, jAzConector.getAgentState());
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId2 = jAzConector.getLastCallId();
+		assertTrue(callId2 > 0);
+
+		espera(5000);
+
+		assertTrue(jAzConector.clearCall(station, callId));
+		assertTrue(jAzConector.clearCall(station, callId2));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetAgentState() {
-		assertEquals(JAzConector.AS_LOGGEDOUT, jAzConector.getAgentState());
-		assertTrue(jAzConector.logIn(station, agentId, agentGroup,
-				agentPassword));
-		assertEquals(JAzConector.AS_NOTREADY, jAzConector.getAgentState());
+		loga();
 		assertTrue(jAzConector.ready(station, agentId, agentGroup));
 		assertEquals(JAzConector.AS_READY, jAzConector.getAgentState());
 		assertTrue(jAzConector.notReady(station, agentId, agentGroup,
 				reasonCode));
 		assertEquals(JAzConector.AS_NOTREADY, jAzConector.getAgentState());
+		desloga();
 	}
 
-	@Test(timeout = 1000)
+	private void loga() {
+		assertTrue(jAzConector.logIn(station, agentId, agentGroup,
+				agentPassword));
+		assertEquals(JAzConector.AS_NOTREADY, jAzConector.getAgentState());
+	}
+
+	private void desloga() {
+		assertTrue(jAzConector.logOut(station, agentId, agentGroup));
+		assertEquals(JAzConector.AS_LOGGEDOUT, jAzConector.getAgentState());
+	}
+
+	@Test
 	public void testGetEventObserver() {
 		assertNotNull(jAzConector.getEventObserver());
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetLastANI() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertEquals(JAzConector.EV_CALLDELIVERED, jAzConector.getLastEvent());
+
+		assertEquals(station2, jAzConector.getLastANI());
+
+		espera(5000);
+
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetLastCallId() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetLastCause() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+		assertTrue(jAzConector.clearCall(station, callId));
+
+		while (jAzConector.getLastEvent() != JAzConector.EV_CALLCLEARED) {
+
+		}
+
+		assertEquals(JAzConector.CS_UNDEFINED, jAzConector.getLastCause());
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetLastDNIS() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertEquals(JAzConector.EV_CALLDELIVERED, jAzConector.getLastEvent());
+
+		assertEquals(station, jAzConector.getLastDNIS());
+
+		espera(5000);
+
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetLastEvent() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertEquals(JAzConector.EV_CALLDELIVERED, jAzConector.getLastEvent());
+		espera(5000);
+		assertEquals(JAzConector.EV_CALLESTABLISHED, jAzConector.getLastEvent());
+		espera(5000);
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetLastUserDetails() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertEquals(JAzConector.EV_CALLDELIVERED, jAzConector.getLastEvent());
+		espera(5000);
+		assertEquals("", jAzConector.getLastUserDetails());
+		espera(5000);
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testGetLastUserInfo() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+
+		assertEquals(JAzConector.EV_CALLDELIVERED, jAzConector.getLastEvent());
+		espera(5000);
+		assertEquals(userInfo, jAzConector.getLastUserInfo());
+		espera(5000);
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
-	@Test(timeout = 1000)
 	public void testHoldCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testIsConnected() {
 		assertTrue(jAzConector.isConnected());
 	}
 
-	private static final String station = "3333";
-	private static final String agentId = "3333";
+	private static final String station = "3331";
+	private static final String station2 = "3332";
+	private static final String agentId = "3331";
 	private static final String agentGroup = "101";
-	private static final String agentPassword = "3333";
+	private static final String agentPassword = "3331";
 
-	@Test(timeout = 1000)
+	@Test
 	public void testLogIn() {
-		assertTrue(jAzConector.logIn(station, agentId, agentGroup,
-				agentPassword));
+		loga();
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testLogOut() {
-		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
-		assertTrue(jAzConector.logOut(station, agentId, agentGroup));
+		loga();
+		desloga();
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testMakeCall() {
-		fail("Not yet implemented");
+		loga();
+		assertTrue(jAzConector.makeCall(station2, station, userInfo));
+		assertEquals(JAzConector.EV_MAKECALLCONF, jAzConector.getLastEvent());
+		int callId = jAzConector.getLastCallId();
+		assertTrue(callId > 0);
+		espera(5000);
+		assertTrue(jAzConector.clearCall(station, callId));
 	}
 
 	private static final int reasonCode = 0;
 
-	@Test(timeout = 1000)
+	@Test
 	public void testNotReady() {
-		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
+		loga();
 		jAzConector.ready(station, agentId, agentGroup);
 		assertTrue(jAzConector.notReady(station, agentId, agentGroup,
 				reasonCode));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testReady() {
-		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
+		loga();
 		assertTrue(jAzConector.ready(station, agentId, agentGroup));
 	}
 
-	@Test(timeout = 1000)
+	@Test
 	public void testAcw() {
-		jAzConector.logIn(station, agentId, agentGroup, agentPassword);
+		loga();
 		jAzConector.ready(station, agentId, agentGroup);
 		assertTrue(jAzConector.acw(station, agentId, agentGroup));
 	}
 
-	@Test(timeout = 1000)
 	public void testRetrieveCall() {
 		fail("Not yet implemented");
 	}
 
-	@Test(timeout = 1000)
 	public void testTransferCall() {
 		fail("Not yet implemented");
 	}
